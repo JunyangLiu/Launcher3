@@ -27,7 +27,8 @@ package com.android.launcher3.config;
 abstract class BaseFlags {
 
     BaseFlags() {}
-
+    //是否删除抽屉
+    public static final boolean REMOVE_DRAWER = true;
     public static final boolean IS_DOGFOOD_BUILD = false;
     public static final String AUTHORITY = "com.android.launcher3.settings".intern();
 

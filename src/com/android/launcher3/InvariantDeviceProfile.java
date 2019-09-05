@@ -265,6 +265,8 @@ public class InvariantDeviceProfile {
 
         // Sort the profiles by their closeness to the dimensions
         ArrayList<InvariantDeviceProfile> pointsByNearness = points;
+//        points.add(new InvariantDeviceProfile("Super Short Stubby",
+//                255, 300,     2, 3, 2, 3, 3, 48, 13, 3, 48, R.xml.default_workspace_3x3));
         Collections.sort(pointsByNearness, new Comparator<InvariantDeviceProfile>() {
             public int compare(InvariantDeviceProfile a, InvariantDeviceProfile b) {
                 return Float.compare(dist(width, height, a.minWidthDps, a.minHeightDps),

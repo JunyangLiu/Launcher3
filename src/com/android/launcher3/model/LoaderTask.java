@@ -35,10 +35,12 @@ import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Process;
 import android.os.UserHandle;
+
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.LongSparseArray;
 import android.util.MutableInt;
+import android.util.Pair;
 
 import com.android.launcher3.AllAppsList;
 import com.android.launcher3.AppInfo;
@@ -184,6 +186,12 @@ public class LoaderTask implements Runnable {
             TraceHelper.partitionSection(TAG, "step 2.1: loading all apps");
             loadAllApps();
 
+            //add by jun
+            if (FeatureFlags.REMOVE_DRAWER) {
+                verifyApplications();
+            }
+            //end add by jun
+
             TraceHelper.partitionSection(TAG, "step 2.2: Binding all apps");
             verifyNotStopped();
             mResults.bindAllApps();
@@ -225,6 +233,29 @@ public class LoaderTask implements Runnable {
         }
         TraceHelper.endSection(TAG);
     }
+
+
+    //add by jun
+    private void verifyApplications() {
+        final Context context = mApp.getContext();
+        ArrayList<Pair<ItemInfo, Object>> installQueue = new ArrayList<>();
+        final List<UserHandle> profiles = mUserManager.getUserProfiles();
+        for (UserHandle user : profiles) {
+            final List<LauncherActivityInfo> apps = mLauncherApps.getActivityList(null, user);
+            ArrayList<InstallShortcutReceiver.PendingInstallShortcutInfo> added = new ArrayList<InstallShortcutReceiver.PendingInstallShortcutInfo>();
+            synchronized (this) {
+                for (LauncherActivityInfo app : apps) {
+                    InstallShortcutReceiver.PendingInstallShortcutInfo pendingInstallShortcutInfo = new InstallShortcutReceiver.PendingInstallShortcutInfo(app, context);
+                    added.add(pendingInstallShortcutInfo);
+                    installQueue.add(pendingInstallShortcutInfo.getItemInfo());
+                }
+            }
+            if (!added.isEmpty()) {
+                mApp.getModel().addAndBindAddedWorkspaceItems(installQueue);
+            }
+        }
+    }
+    //end add by jun
 
     public synchronized void stopLocked() {
         mStopped = true;
@@ -824,6 +855,7 @@ public class LoaderTask implements Runnable {
             // Create the ApplicationInfos
             for (int i = 0; i < apps.size(); i++) {
                 LauncherActivityInfo app = apps.get(i);
+                Log.d("liujunyang","app.getName() = " +app.getName());
                 // This builds the icon bitmaps.
                 mBgAllAppsList.add(new AppInfo(app, user, quietMode), app);
             }
